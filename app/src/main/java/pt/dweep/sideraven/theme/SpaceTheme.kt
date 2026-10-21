@@ -61,12 +61,12 @@ fun ColorScheme.pureBlack(): ColorScheme =
         surface = Color.Black,
         surfaceDim = Color.Black,
         surfaceContainerLowest = Color.Black,
-        surfaceContainerLow = Color(0xFF0A0A0B),
-        surfaceContainer = Color(0xFF111113),
-        surfaceContainerHigh = Color(0xFF1A1A1D),
-        surfaceContainerHighest = Color(0xFF242428),
-        surfaceBright = Color(0xFF242428),
-        surfaceVariant = Color(0xFF1A1A1D),
+        surfaceContainerLow = Color.Black,
+        surfaceContainer = Color.Black,
+        surfaceContainerHigh = Color(0xFF0C0C0E),
+        surfaceContainerHighest = Color(0xFF141417),
+        surfaceBright = Color(0xFF141417),
+        surfaceVariant = Color(0xFF0C0C0E),
     )
 
 /** The current Space theme's frame, or null for a plain surface (pure black, Private, or themes off). */

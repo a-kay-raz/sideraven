@@ -367,7 +367,7 @@ open class SidebarModeStore(
     val fullScreen = choice(KEY_FULL_SCREEN, FullScreen.Off)
 
     /** Whether the dark theme is pure black, for OLED screens; it replaces Space themes. */
-    val pureBlack = flag(KEY_PURE_BLACK, false)
+    val pureBlack = flag(KEY_PURE_BLACK, true)
 
     /** The accent colour (a Space palette key); Spaces on the default colour follow it. */
     val accent = text(KEY_ACCENT, DEFAULT_SPACE_ACCENT)

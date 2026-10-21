@@ -887,6 +887,14 @@ open class FenixApplication : Application(), Provider, ThemeProvider {
                 },
                 onUpdatePermissionRequest = components.addonUpdater::onUpdatePermissionRequest,
             )
+            try {
+                components.core.geckoRuntime.webExtensionController.ensureBuiltIn(
+                    "resource://android/assets/extensions/amoled_dark/",
+                    "amoled-dark@sideraven",
+                )
+            } catch (e: Exception) {
+                logger.error("Failed to load AMOLED dark built-in extension", e)
+            }
         } catch (e: UnsupportedOperationException) {
             logger.error("Failed to initialize web extension support", e)
         }

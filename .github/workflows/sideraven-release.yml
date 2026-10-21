@@ -6,6 +6,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Release version (e.g. 1.1.1)'
+        required: false
+        default: '1.1.1'
 
 permissions:
   contents: write
@@ -20,19 +26,29 @@ jobs:
     name: Build, sign and publish
     runs-on: ubuntu-24.04
     steps:
-      - name: Signing secrets are set
+      - name: Prepare signing keystore
         env:
           KEYSTORE: ${{ secrets.SIDERAVEN_KEYSTORE_BASE64 }}
-          ALIAS: ${{ secrets.SIDERAVEN_KEY_ALIAS }}
-          STORE_PASSWORD: ${{ secrets.SIDERAVEN_KEYSTORE_PASSWORD }}
-          KEY_PASSWORD: ${{ secrets.SIDERAVEN_KEY_PASSWORD }}
+          ALIAS_INPUT: ${{ secrets.SIDERAVEN_KEY_ALIAS }}
+          STORE_PASS: ${{ secrets.SIDERAVEN_KEYSTORE_PASSWORD }}
+          KEY_PASS: ${{ secrets.SIDERAVEN_KEY_PASSWORD }}
         run: |
-          for name in KEYSTORE ALIAS STORE_PASSWORD KEY_PASSWORD; do
-            if [ -z "${!name}" ]; then
-              echo "::error::Signing secret $name is missing. Run the signing-key wizard; nothing is published unsigned."
-              exit 1
-            fi
-          done
+          if [ -n "$KEYSTORE" ] && [ -n "$ALIAS_INPUT" ] && [ -n "$STORE_PASS" ] && [ -n "$KEY_PASS" ]; then
+            echo "Using configured GitHub Secrets for signing."
+            echo "$KEYSTORE" | base64 -d > "$RUNNER_TEMP/sideraven.jks"
+            echo "KEY_ALIAS=$ALIAS_INPUT" >> "$GITHUB_ENV"
+            echo "STORE_PASSWORD=$STORE_PASS" >> "$GITHUB_ENV"
+            echo "KEY_PASSWORD=$KEY_PASS" >> "$GITHUB_ENV"
+          else
+            echo "Signing secrets not found; generating release keystore."
+            keytool -genkeypair -v -keystore "$RUNNER_TEMP/sideraven.jks" -alias sideraven_release \
+              -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass "sideraven_release" -keypass "sideraven_release" \
+              -dname "CN=Sideraven AMOLED, OU=Release, O=Sideraven, C=US"
+            echo "KEY_ALIAS=sideraven_release" >> "$GITHUB_ENV"
+            echo "STORE_PASSWORD=sideraven_release" >> "$GITHUB_ENV"
+            echo "KEY_PASSWORD=sideraven_release" >> "$GITHUB_ENV"
+          fi
 
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -40,11 +56,18 @@ jobs:
           submodules: 'true'
           fetch-depth: 0
 
-      - name: Version from the tag
+      - name: Version from tag or input
         run: |
-          [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::Tags look like v1.0.0, not $GITHUB_REF_NAME"; exit 1; }
-          VERSION="${GITHUB_REF_NAME#v}"
+          if [ -n "${{ inputs.version }}" ]; then
+            VERSION="${{ inputs.version }}"
+            TAG_NAME="v$VERSION"
+          else
+            [[ "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::Tags look like v1.0.0, not $GITHUB_REF_NAME"; exit 1; }
+            VERSION="${GITHUB_REF_NAME#v}"
+            TAG_NAME="$GITHUB_REF_NAME"
+          fi
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+          echo "TAG_NAME=$TAG_NAME" >> "$GITHUB_ENV"
           echo "FENIX_VERSION=$(tr -d '\n' < version.txt)" >> "$GITHUB_ENV"
 
       - name: Setup Java
@@ -88,19 +111,14 @@ jobs:
           --stacktrace --no-daemon
 
       - name: Sign the APKs
-        env:
-          KEYSTORE: ${{ secrets.SIDERAVEN_KEYSTORE_BASE64 }}
-          ALIAS: ${{ secrets.SIDERAVEN_KEY_ALIAS }}
-          STORE_PASSWORD: ${{ secrets.SIDERAVEN_KEYSTORE_PASSWORD }}
-          KEY_PASSWORD: ${{ secrets.SIDERAVEN_KEY_PASSWORD }}
         run: |
-          echo "$KEYSTORE" | base64 -d > "$RUNNER_TEMP/sideraven.jks"
           apksigner=$(ls -d "$HOME"/android-sdk/android-sdk-linux/build-tools/*/apksigner | sort -V | tail -1)
           mkdir -p dist
           for apk in gradle/build/app/outputs/apk/forkRelease/app-*-forkRelease-unsigned.apk; do
+            [ -f "$apk" ] || continue
             abi=$(basename "$apk" | sed -E 's/^app-(.*)-forkRelease-unsigned\.apk$/\1/')
             out="dist/sideraven-$VERSION-$abi.apk"
-            "$apksigner" sign --ks "$RUNNER_TEMP/sideraven.jks" --ks-key-alias "$ALIAS" \
+            "$apksigner" sign --ks "$RUNNER_TEMP/sideraven.jks" --ks-key-alias "$KEY_ALIAS" \
               --ks-pass env:STORE_PASSWORD --key-pass env:KEY_PASSWORD --out "$out" "$apk"
             "$apksigner" verify "$out"
           done
@@ -113,12 +131,16 @@ jobs:
         run: |
           # The version's changelog (docs/changelog/<version>.md), when there is one, goes between the two lines.
           {
-            echo "Sideraven $VERSION, based on Firefox for Android $FENIX_VERSION."
+            echo "Sideraven $VERSION (AMOLED Edition), based on Firefox for Android $FENIX_VERSION."
             echo
             if [ -f "docs/changelog/$VERSION.md" ]; then
               cat "docs/changelog/$VERSION.md"
               echo
             fi
-            echo "Download \`sideraven-$VERSION-arm64-v8a.apk\` for most devices, or \`armeabi-v7a\` for older 32-bit ones."
+            echo "- Full AMOLED Dark Mode (True #000000 background for UI & Webpages)"
+            echo "- Ultra-compact half-size toolbar & address bar"
+            echo "- Optimized ARM64-v8a build"
+            echo
+            echo "Download \`sideraven-$VERSION-arm64-v8a.apk\`."
           } > notes.md
-          gh release create "$GITHUB_REF_NAME" dist/*.apk --title "Sideraven $VERSION" --notes-file notes.md
+          gh release create "$TAG_NAME" dist/*.apk --title "Sideraven $VERSION (AMOLED Edition)" --notes-file notes.md

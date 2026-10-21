@@ -275,13 +275,13 @@ android {
             // As gradle is unable to pick the right apk to install when multiple apks are generated
             // while running benchmark tests or generating baseline profiles. To circumvent this,
             // this flag is passed to make sure only one apk is generated so gradle can pick that one.
-            if (project.hasProperty("benchmarkTest")) {
-                include "arm64-v8a"
-            } else {
+            if (project.hasProperty("allAbis")) {
                 include "armeabi-v7a", "arm64-v8a", "x86_64"
                 if (gradle.mozconfig.substs.MOZILLA_OFFICIAL || System.getenv("MOZ_BUILD_CONFIG_LINT") == "1") {
                     universalApk true
                 }
+            } else {
+                include "arm64-v8a"
             }
         }
     }

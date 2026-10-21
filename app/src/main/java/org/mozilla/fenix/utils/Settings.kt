@@ -1292,13 +1292,13 @@ class Settings(
     var shouldUseDarkTheme by
         booleanPreference(
             appContext.getPreferenceKey(R.string.pref_key_dark_theme),
-            default = false,
+            default = true,
         )
 
     var shouldUseOledTheme by
         booleanPreference(
             appContext.getPreferenceKey(R.string.pref_key_oled_theme),
-            default = false,
+            default = true,
         )
 
     var shouldFollowDeviceTheme by
