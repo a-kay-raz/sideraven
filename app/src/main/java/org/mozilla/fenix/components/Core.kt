@@ -175,11 +175,7 @@ class Core(
                 forceUserScalableContent = context.components.settings.forceEnableZoom,
                 loginAutofillEnabled = context.components.settings.shouldAutofillLogins,
                 enterpriseRootsEnabled = context.components.settings.allowThirdPartyRootCerts,
-                clearColor =
-                    ContextCompat.getColor(
-                        context,
-                        R.color.fx_mobile_surface,
-                    ),
+                clearColor = android.graphics.Color.BLACK,
                 httpsOnlyMode = context.components.settings.getHttpsOnlyMode(),
                 dohSettingsMode = context.components.settings.getDohSettingsMode(),
                 dohProviderUrl = context.components.settings.dohProviderUrl,

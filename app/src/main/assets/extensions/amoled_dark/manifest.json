@@ -1,0 +1,36 @@
+{
+  "manifest_version": 2,
+  "name": "Sideraven AMOLED Dark Web",
+  "description": "True #000000 AMOLED dark theme for all webpages in Sideraven",
+  "version": "1.1.2",
+  "browser_specific_settings": {
+    "gecko_android": {},
+    "gecko": {
+      "id": "amoled-dark@sideraven.org"
+    }
+  },
+  "permissions": [
+    "<all_urls>",
+    "tabs",
+    "internal:privateBrowsingAllowed"
+  ],
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>",
+        "http://*/*",
+        "https://*/*",
+        "file:///*"
+      ],
+      "css": [
+        "amoled_dark.css"
+      ],
+      "js": [
+        "amoled_dark.js"
+      ],
+      "run_at": "document_start",
+      "all_frames": true,
+      "match_about_blank": true
+    }
+  ]
+}

@@ -1,34 +1,150 @@
-/* AMOLED Dark Web Mode for Sideraven */
-:root {
-  color-scheme: dark !important;
-}
-
-html {
-  background-color: #000000 !important;
-}
-
+/* Sideraven True #000000 AMOLED Dark Web Mode */
+:root,
+html,
+[data-theme],
+[data-color-mode],
 body {
+  color-scheme: dark !important;
+  --bg: #000000 !important;
+  --bg-color: #000000 !important;
+  --background: #000000 !important;
+  --background-color: #000000 !important;
+  --surface: #000000 !important;
+  --surface-color: #08080b !important;
+  --color-canvas-default: #000000 !important;
+  --color-canvas-subtle: #08080b !important;
+  --color-canvas-inset: #000000 !important;
+  --bs-body-bg: #000000 !important;
+  --bs-body-color: #e4e4e7 !important;
+  --md-sys-color-background: #000000 !important;
+  --md-sys-color-surface: #000000 !important;
+  --md-sys-color-surface-container: #08080b !important;
   background-color: #000000 !important;
-  color: #e2e2e6 !important;
+  color: #e4e4e7 !important;
 }
 
-/* Force pure AMOLED black for light-background elements */
-html:not([class*="dark"]):not([data-theme*="dark"]),
-body:not([class*="dark"]):not([data-theme*="dark"]) {
+/* Primary page & layout containers forced to pure #000000 AMOLED black */
+html,
+body,
+main,
+article,
+section,
+aside,
+nav,
+header,
+footer,
+[role="main"],
+[role="region"],
+[role="navigation"],
+[role="banner"],
+[role="contentinfo"],
+#app,
+#root,
+#__next,
+#content,
+#main,
+#main-content,
+#wrapper,
+#page,
+#bodyContent,
+.mw-page-container,
+.mw-workspace-container,
+.mw-content-container,
+.vector-body {
   background-color: #000000 !important;
-  color: #e2e2e6 !important;
+  color: #e4e4e7 !important;
 }
 
-/* Scrollbars in pure black */
+/* Generic blocks styled dynamically via attribute hook from amoled_dark.js */
+[data-sideraven-amoled="bg"] {
+  background-color: #000000 !important;
+}
+
+[data-sideraven-amoled="surface"] {
+  background-color: #09090d !important;
+  border-color: #1e1e26 !important;
+}
+
+[data-sideraven-amoled-text="light"] {
+  color: #e4e4e7 !important;
+}
+
+/* Typography & readable text contrast on AMOLED black */
+p,
+li,
+dd,
+dt,
+blockquote,
+figcaption,
+label,
+td,
+th,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: #e4e4e7;
+}
+
+a:not([class*="btn"]):not([role="button"]) {
+  color: #8ab4f8;
+}
+
+/* Inputs, forms, tables & code blocks */
+input,
+textarea,
+select,
+button:not([style*="background"]) {
+  background-color: #0c0c10 !important;
+  color: #e4e4e7 !important;
+  border-color: #24242e !important;
+}
+
+table,
+tr,
+td,
+th,
+thead,
+tbody {
+  background-color: #000000 !important;
+  border-color: #1f1f27 !important;
+  color: #e4e4e7 !important;
+}
+
+pre,
+code {
+  background-color: #0a0a0f !important;
+  color: #d4d4d8 !important;
+}
+
+hr {
+  border-color: #1c1c24 !important;
+}
+
+/* Preserve media elements without color corruption */
+img,
+video,
+canvas,
+picture,
+iframe,
+svg {
+  filter: none !important;
+}
+
+/* Pure black scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
   background-color: #000000 !important;
 }
+
 ::-webkit-scrollbar-thumb {
-  background-color: #242428 !important;
-  border-radius: 4px;
+  background-color: #22222a !important;
+  border-radius: 3px;
 }
+
 ::-webkit-scrollbar-track {
   background-color: #000000 !important;
 }
