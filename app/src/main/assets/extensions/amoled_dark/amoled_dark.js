@@ -4,8 +4,17 @@
 
   const SKIP_TAGS = new Set([
     'IMG', 'VIDEO', 'CANVAS', 'PICTURE', 'SVG', 'PATH', 'CIRCLE',
-    'RECT', 'IFRAME', 'SCRIPT', 'STYLE', 'LINK', 'META', 'HEAD'
+    'RECT', 'IFRAME', 'SCRIPT', 'STYLE', 'LINK', 'META', 'HEAD',
+    'NOSCRIPT', 'SOURCE', 'TRACK', 'AUDIO', 'OBJECT', 'EMBED'
   ]);
+
+  const SURFACE_TAGS = new Set([
+    'ASIDE', 'NAV', 'DIALOG', 'FIELDSET', 'FORM', 'BLOCKQUOTE'
+  ]);
+
+  const processedNodes = new WeakSet();
+  const queue = [];
+  let frameScheduled = false;
 
   function ensureMetaDarkScheme() {
     if (!document.documentElement) return;
@@ -27,7 +36,8 @@
     const m = colorStr.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)(?:\s*,\s*([\d.]+))?\s*\)/);
     if (!m) return null;
     const a = m[4] !== undefined ? parseFloat(m[4]) : 1;
-    if (a < 0.15) return null;
+    // Preserve translucent / glassmorphism headers & overlays
+    if (a < 0.72) return null;
     return {
       r: parseInt(m[1], 10),
       g: parseInt(m[2], 10),
@@ -37,7 +47,8 @@
   }
 
   function processElement(el) {
-    if (!el || el.nodeType !== 1 || SKIP_TAGS.has(el.tagName)) return;
+    if (!el || el.nodeType !== 1 || SKIP_TAGS.has(el.tagName) || processedNodes.has(el)) return;
+    processedNodes.add(el);
 
     try {
       const style = window.getComputedStyle(el);
@@ -52,14 +63,10 @@
           const saturation = maxC - minC;
           const lum = 0.2126 * bg.r + 0.7152 * bg.g + 0.0722 * bg.b;
 
-          // Convert bright/white backgrounds OR non-AMOLED dark-gray backgrounds (low saturation) to #000000
-          if (saturation < 45 && (lum > 110 || (lum > 2 && lum <= 55))) {
-            const rect = el.getBoundingClientRect();
-            if (rect.width > 220 || rect.height > 120 || el === document.body || el === document.documentElement) {
-              el.setAttribute('data-sideraven-amoled', 'bg');
-            } else {
-              el.setAttribute('data-sideraven-amoled', 'surface');
-            }
+          // Convert opaque bright/white or dark-gray low-saturation backgrounds to AMOLED #000000
+          if (saturation < 45 && (lum > 110 || (lum > 2 && lum <= 58))) {
+            const isSmallSurface = SURFACE_TAGS.has(el.tagName) || el.getAttribute('role') === 'dialog';
+            el.setAttribute('data-sideraven-amoled', isSmallSurface ? 'surface' : 'bg');
           }
         }
       }
@@ -67,7 +74,7 @@
       const fg = parseRgb(style.color);
       if (fg) {
         const fgLum = 0.2126 * fg.r + 0.7152 * fg.g + 0.0722 * fg.b;
-        if (fgLum < 65) {
+        if (fgLum < 68) {
           el.setAttribute('data-sideraven-amoled-text', 'light');
         }
       }
@@ -76,44 +83,60 @@
     }
   }
 
-  function scanTree(root) {
-    ensureMetaDarkScheme();
-    if (!root || root.nodeType !== 1) return;
-    processElement(root);
-    const nodes = root.querySelectorAll(
+  function flushQueue() {
+    frameScheduled = false;
+    const batchSize = 250;
+    let count = 0;
+    while (queue.length > 0 && count < batchSize) {
+      const node = queue.shift();
+      processElement(node);
+      count++;
+    }
+    if (queue.length > 0) {
+      scheduleFlush();
+    }
+  }
+
+  function scheduleFlush() {
+    if (frameScheduled) return;
+    frameScheduled = true;
+    requestAnimationFrame(flushQueue);
+  }
+
+  function enqueueSubtree(root) {
+    if (!root || root.nodeType !== 1 || SKIP_TAGS.has(root.tagName)) return;
+    if (!processedNodes.has(root)) {
+      queue.push(root);
+    }
+    const children = root.querySelectorAll(
       'body, div, main, section, article, aside, header, footer, nav, ul, ol, li, table, tr, td, th, form, fieldset, dialog, p, span, h1, h2, h3, h4, h5, h6'
     );
-    const limit = Math.min(nodes.length, 1500);
-    for (let i = 0; i < limit; i++) {
-      processElement(nodes[i]);
+    for (let i = 0; i < children.length; i++) {
+      const child = children[i];
+      if (!processedNodes.has(child)) {
+        queue.push(child);
+      }
+    }
+    if (queue.length > 0) {
+      scheduleFlush();
     }
   }
 
   ensureMetaDarkScheme();
 
-  let scheduled = false;
-  const pendingRoots = new Set();
-
-  function scheduleScan(target) {
-    pendingRoots.add(target || document.documentElement);
-    if (scheduled) return;
-    scheduled = true;
-    requestAnimationFrame(() => {
-      scheduled = false;
-      pendingRoots.forEach((r) => scanTree(r));
-      pendingRoots.clear();
-    });
-  }
-
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-      scanTree(document.documentElement);
+      ensureMetaDarkScheme();
+      enqueueSubtree(document.documentElement);
     }, { passive: true });
   } else {
-    scanTree(document.documentElement);
+    enqueueSubtree(document.documentElement);
   }
 
-  window.addEventListener('load', () => scanTree(document.documentElement), { passive: true });
+  window.addEventListener('load', () => {
+    ensureMetaDarkScheme();
+    enqueueSubtree(document.documentElement);
+  }, { passive: true });
 
   const observer = new MutationObserver((mutations) => {
     for (let i = 0; i < mutations.length; i++) {
@@ -122,7 +145,7 @@
         for (let j = 0; j < m.addedNodes.length; j++) {
           const n = m.addedNodes[j];
           if (n.nodeType === 1) {
-            scheduleScan(n);
+            enqueueSubtree(n);
           }
         }
       }

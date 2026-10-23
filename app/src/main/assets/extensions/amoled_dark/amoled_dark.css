@@ -23,28 +23,17 @@ body {
   color: #e4e4e7 !important;
 }
 
-/* Primary page & layout containers forced to pure #000000 AMOLED black */
+/* Primary root document canvases forced to pure #000000 AMOLED black */
 html,
 body,
 main,
-article,
-section,
-aside,
-nav,
-header,
-footer,
 [role="main"],
-[role="region"],
-[role="navigation"],
-[role="banner"],
-[role="contentinfo"],
 #app,
 #root,
 #__next,
 #content,
 #main,
 #main-content,
-#wrapper,
 #page,
 #bodyContent,
 .mw-page-container,
@@ -55,7 +44,7 @@ footer,
   color: #e4e4e7 !important;
 }
 
-/* Generic blocks styled dynamically via attribute hook from amoled_dark.js */
+/* Opaque containers and surfaces tagged dynamically by amoled_dark.js (preserves transparent headers/overlays) */
 [data-sideraven-amoled="bg"] {
   background-color: #000000 !important;
 }
@@ -70,21 +59,7 @@ footer,
 }
 
 /* Typography & readable text contrast on AMOLED black */
-p,
-li,
-dd,
-dt,
-blockquote,
-figcaption,
-label,
-td,
-th,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
+p, li, dd, dt, blockquote, figcaption, label, td, th, h1, h2, h3, h4, h5, h6 {
   color: #e4e4e7;
 }
 
@@ -93,28 +68,19 @@ a:not([class*="btn"]):not([role="button"]) {
 }
 
 /* Inputs, forms, tables & code blocks */
-input,
-textarea,
-select,
-button:not([style*="background"]) {
+input, textarea, select, button:not([style*="background"]) {
   background-color: #0c0c10 !important;
   color: #e4e4e7 !important;
   border-color: #24242e !important;
 }
 
-table,
-tr,
-td,
-th,
-thead,
-tbody {
+table, tr, td, th, thead, tbody {
   background-color: #000000 !important;
   border-color: #1f1f27 !important;
   color: #e4e4e7 !important;
 }
 
-pre,
-code {
+pre, code {
   background-color: #0a0a0f !important;
   color: #d4d4d8 !important;
 }
@@ -124,12 +90,7 @@ hr {
 }
 
 /* Preserve media elements without color corruption */
-img,
-video,
-canvas,
-picture,
-iframe,
-svg {
+img, video, canvas, picture, iframe, svg {
   filter: none !important;
 }
 

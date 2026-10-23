@@ -130,7 +130,7 @@ internal fun AddressBar(
                 .testTag(SidebarTestTag.ADDRESS_BAR),
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
-            Row(modifier = Modifier.fillMaxWidth().height(28.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(modifier = Modifier.fillMaxWidth().height(36.dp), verticalAlignment = Alignment.CenterVertically) {
                 AddressPill(address, onIntent, Modifier.weight(1f))
                 // Fenix's own menu: in the Sidebar layout its toolbar (and its ⋮) is hidden.
                 BarButton(iconsR.drawable.mozac_ic_ellipsis_vertical_24, stringResource(R.string.sideraven_address_menu), true, SidebarTestTag.ADDRESS_MENU) {
@@ -138,12 +138,12 @@ internal fun AddressBar(
                 }
             }
             // The home page has nowhere to go back or forward to.
-            if (!address.isHome) Row(modifier = Modifier.fillMaxWidth().height(28.dp), verticalAlignment = Alignment.CenterVertically) {
+            if (!address.isHome) Row(modifier = Modifier.fillMaxWidth().height(36.dp), verticalAlignment = Alignment.CenterVertically) {
                 // Back: long-press for the tab's history.
                 Box(
                     modifier =
                         Modifier
-                            .size(28.dp)
+                            .size(36.dp)
                             .clip(MaterialTheme.shapes.small)
                             // Long-press opens the tab's history even when there's nothing to go back to.
                             .combinedClickable(
@@ -259,7 +259,7 @@ private fun AddressPill(
             Box(
                 modifier =
                     Modifier
-                        .size(20.dp)
+                        .size(24.dp)
                         .clip(MaterialTheme.shapes.small)
                         .combinedClickable(role = Role.Button, onClick = { onIntent(SidebarIntent.OpenSitePanel) })
                         .semantics { contentDescription = siteInfoLabel }
@@ -284,7 +284,7 @@ private fun AddressPill(
         }
         Text(
             text = if (address.isHome) placeholder else address.domain,
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodySmall,
             color = if (address.isHome) colors.onSurfaceVariant else colors.onSurface,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -311,7 +311,7 @@ internal fun BarButton(
     Box(
         modifier =
             Modifier
-                .size(28.dp)
+                .size(36.dp)
                 .clip(MaterialTheme.shapes.small)
                 .combinedClickable(enabled = enabled, role = Role.Button, onClick = onClick)
                 .semantics { contentDescription = label }

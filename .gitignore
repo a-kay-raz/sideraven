@@ -103,7 +103,6 @@ test_artifacts/
 /build/test-tools/*.gz
 
 
-# Web extensions: manifest.json
-!app/src/main/assets/extensions/**/manifest.json files are generated
+# Web extensions: manifest.json files are generated
 manifest.json
 !app/src/main/assets/extensions/**/manifest.json

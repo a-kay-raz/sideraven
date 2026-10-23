@@ -9,9 +9,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version (e.g. 1.1.2)'
+        description: 'Release version (e.g. 1.1.0)'
         required: false
-        default: '1.1.2'
+        default: '1.1.0'
 
 permissions:
   contents: write
@@ -25,6 +25,7 @@ jobs:
     timeout-minutes: 300
     name: Build, sign and publish
     runs-on: ubuntu-24.04
+
     steps:
       - name: Prepare signing keystore
         env:
@@ -69,6 +70,9 @@ jobs:
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
           echo "TAG_NAME=$TAG_NAME" >> "$GITHUB_ENV"
           echo "FENIX_VERSION=$(tr -d '\n' < version.txt)" >> "$GITHUB_ENV"
+          if [ -f "app/src/main/assets/extensions/amoled_dark/manifest.json" ]; then
+            python3 -c "import json; p='app/src/main/assets/extensions/amoled_dark/manifest.json'; d=json.load(open(p)); d['version']='$VERSION'; json.dump(d, open(p,'w'), indent=2)"
+          fi
 
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -131,21 +135,21 @@ jobs:
         run: |
           # The version's changelog (docs/changelog/<version>.md), when there is one, goes between the two lines.
           {
-            echo "Sideraven $VERSION (AMOLED Edition), based on Firefox for Android $FENIX_VERSION."
+            echo "Sideraven $VERSION, based on Firefox for Android $FENIX_VERSION."
             echo
             if [ -f "docs/changelog/$VERSION.md" ]; then
               cat "docs/changelog/$VERSION.md"
               echo
             fi
             echo "- Full AMOLED Dark Mode (True #000000 background for UI & Webpages)"
-            echo "- Ultra-compact half-size toolbar & address bar"
+            echo "- Balanced 36dp compact toolbar & address bar"
             echo "- Optimized ARM64-v8a build"
             echo
             echo "Download \`sideraven-$VERSION-arm64-v8a.apk\`."
           } > notes.md
           if gh release view "$TAG_NAME" >/dev/null 2>&1; then
             gh release upload "$TAG_NAME" dist/*.apk --clobber
-            gh release edit "$TAG_NAME" --title "Sideraven $VERSION (AMOLED Edition)" --notes-file notes.md
+            gh release edit "$TAG_NAME" --title "Sideraven $VERSION" --notes-file notes.md
           else
-            gh release create "$TAG_NAME" dist/*.apk --title "Sideraven $VERSION (AMOLED Edition)" --notes-file notes.md
+            gh release create "$TAG_NAME" dist/*.apk --title "Sideraven $VERSION" --notes-file notes.md
           fi

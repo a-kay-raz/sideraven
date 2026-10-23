@@ -891,8 +891,13 @@ open class FenixApplication : Application(), Provider, ThemeProvider {
                 components.core.engine.installBuiltInWebExtension(
                     id = "amoled-dark@sideraven.org",
                     url = "resource://android/assets/extensions/amoled_dark/",
-                    onSuccess = {
-                        logger.debug("Installed AMOLED dark built-in extension: ${it.id}")
+                    onSuccess = { ext ->
+                        if (settings().shouldUseDarkTheme || settings().shouldUseOledTheme) {
+                            components.core.engine.enableWebExtension(ext)
+                        } else {
+                            components.core.engine.disableWebExtension(ext, onSuccess = {})
+                        }
+                        logger.debug("Loaded AMOLED dark built-in extension: ${ext.id}")
                     },
                     onError = { throwable ->
                         logger.error("Failed to install AMOLED dark built-in extension", throwable)
