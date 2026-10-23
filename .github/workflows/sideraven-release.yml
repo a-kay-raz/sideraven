@@ -9,9 +9,9 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Release version (e.g. 1.1.1)'
+        description: 'Release version (e.g. 1.1.2)'
         required: false
-        default: '1.1.1'
+        default: '1.1.2'
 
 permissions:
   contents: write
@@ -143,4 +143,9 @@ jobs:
             echo
             echo "Download \`sideraven-$VERSION-arm64-v8a.apk\`."
           } > notes.md
-          gh release create "$TAG_NAME" dist/*.apk --title "Sideraven $VERSION (AMOLED Edition)" --notes-file notes.md
+          if gh release view "$TAG_NAME" >/dev/null 2>&1; then
+            gh release upload "$TAG_NAME" dist/*.apk --clobber
+            gh release edit "$TAG_NAME" --title "Sideraven $VERSION (AMOLED Edition)" --notes-file notes.md
+          else
+            gh release create "$TAG_NAME" dist/*.apk --title "Sideraven $VERSION (AMOLED Edition)" --notes-file notes.md
+          fi
