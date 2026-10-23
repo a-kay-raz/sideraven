@@ -892,7 +892,7 @@ open class FenixApplication : Application(), Provider, ThemeProvider {
                     id = "amoled-dark@sideraven.org",
                     url = "resource://android/assets/extensions/amoled_dark/",
                     onSuccess = { ext ->
-                        if (settings().shouldUseDarkTheme || settings().shouldUseOledTheme) {
+                        if (components.settings.shouldUseDarkTheme || components.settings.shouldUseOledTheme) {
                             components.core.engine.enableWebExtension(ext)
                         } else {
                             components.core.engine.disableWebExtension(ext, onSuccess = {})
