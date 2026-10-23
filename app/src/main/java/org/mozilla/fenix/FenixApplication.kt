@@ -894,7 +894,7 @@ open class FenixApplication : Application(), Provider, ThemeProvider {
                     onSuccess = {
                         logger.debug("Installed AMOLED dark built-in extension: ${it.id}")
                     },
-                    onError = { _, throwable ->
+                    onError = { throwable ->
                         logger.error("Failed to install AMOLED dark built-in extension", throwable)
                     },
                 )
